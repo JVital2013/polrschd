@@ -70,39 +70,42 @@ for line in urllib.request.urlopen(polrschdURL): # download txt, read each line
 	
 	# Determine frequency from transmitter ID	
 	if "LSB" in text:
-		txFreq = "1698.0 MHz RHCP"
+		txFreq = "1698.0 MHz RHCP "
 	elif "MSB" in text:
-		txFreq = "1702.5 MHz LHCP"
+		txFreq = "1702.5 MHz LHCP "
 	elif "HSB" in text:
-		txFreq = "1707.0 MHz RHCP"
+		txFreq = "1707.0 MHz RHCP "
 	elif "ESB" in text:
-		txFreq = "2247.5 MHz RHCP"
+		txFreq = "2247.5 MHz RHCP "
 	else:
 		txFreq = "Unknown Frequency"
 			
 	# Determine type of event	
 	if "PBK,START,GAC" in text:
-		eventType = "Start of GAC transmission"
+		eventType = "Start"
 	elif "PBK,END,GAC" in text:
-		eventType = "End of GAC transmission  "
+		eventType = "End  "
 	else:
 		eventType = "other"
 		
-	if ((eventType == "Start of GAC transmission") | (eventType == "End of GAC transmission  ")):
+	if ((eventType == "Start") | (eventType == "End  ")):
 
 		# Compute observed elevation of satellite during event
-		elevation = (round(satellite.get_observer_look(dateParsed, yourLon, yourLat, yourAlt/1000)[1]))
-		elStr = str(elevation)+"°"
+		observations = satellite.get_observer_look(dateParsed, yourLon, yourLat, yourAlt/1000)
+		elevation = round(observations[1])
+		azimuth = round(observations[0])
+		elStr = "Alt: "+(str(elevation)+"°").ljust(3)
+		azStr = "Az: "+str(azimuth)+"°"
 		
 		# Set print color
-		if ((elevation > 5) & (eventType == "Start of GAC transmission")):
+		if ((elevation > 5) & (eventType == "Start")):
 			printCol = f"{bcolors.BOLD}{bcolors.OKGREEN}"
-		elif ((elevation >= 0) & (eventType == "Start of GAC transmission")):
+		elif ((elevation >= 0) & (eventType == "Start")):
 			printCol = f"{bcolors.OKGREEN}"
-		elif ((elevation >= 0) & (eventType == "End of GAC transmission  ")):
+		elif ((elevation >= 0) & (eventType == "End  ")):
 			printCol = f"{bcolors.WARNING}"
 		else:
 			printCol = f"{bcolors.FAIL}"
 			
 		if (elevation >= minElevation):
-			print(printCol, dateParsed, satIDParsed, eventType, txFreq, elStr, f"{bcolors.ENDC}")
+			print(printCol + str(dateParsed), satIDParsed, eventType, txFreq, elStr, azStr + f"{bcolors.ENDC}", sep='\t')
